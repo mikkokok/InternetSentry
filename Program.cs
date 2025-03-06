@@ -1,14 +1,25 @@
 using InternetSentry.Services;
 using InternetSentry.Services.Clients;
-using System.Text.Json.Serialization;
+using InternetSentry.Workers;
 
-var builder = WebApplication.CreateSlimBuilder(args);
-
-builder.Services.ConfigureHttpJsonOptions(options =>
-{
-
-});
+var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton<TechniClient>();
-builder.Services.AddHostedService<TechniService>();
+builder.Services.AddSingleton<TechniService>();
+builder.Services.AddHostedService<InternetSentryWorker>();
 
 var app = builder.Build();
+
+app.UseSwagger();
+app.UseSwaggerUI(options =>
+{
+    options.SwaggerEndpoint("/swagger/v1/swagger.json", "InternetSentry API");
+    options.RoutePrefix = string.Empty;
+});
+
+app.MapGet("/ping", () => "pong");
+app.MapGet("/status", (TechniService techniService) => {
+    return Results.Ok(techniService.CurrenStatus);
+    });
+app.Run();
