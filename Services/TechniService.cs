@@ -1,6 +1,7 @@
 ﻿
 using InternetSentry.Models;
 using InternetSentry.Services.Clients;
+using System.Net.NetworkInformation;
 
 namespace InternetSentry.Services
 {
@@ -9,6 +10,7 @@ namespace InternetSentry.Services
         private readonly TechniClient _client = techniClient;
         private readonly ILogger<TechniService> _logger = logger;
         public CurrentStatus CurrenStatus { get; private set; } = new CurrentStatus { Status = ConnStatus.Connected, Updated = DateTime.Now };
+        public List<PingStatus> Pings { get; private set; } = [];
 
         public async Task RunDiag(CancellationToken stoppingToken)
         {
@@ -18,10 +20,18 @@ namespace InternetSentry.Services
             {
                 while (!stoppingToken.IsCancellationRequested)
                 {
-                    bool status = await _client.CheckInternetStatus();
-                    if (!status)
+                    bool isConnected = await _client.CheckInternetStatus();
+                    if (_client.PingStatus.Status.Status == IPStatus.Success)
                     {
-
+                        Pings.Add(_client.PingStatus);
+                    }
+                    if (isConnected)
+                    {
+                        await _client.ForceRestart();
+                    }
+                    if (DateTime.Now.Day == 28 && DateTime.Now.Hour == 23)
+                    {
+                        Pings.Clear();
                     }
                     await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
                 }
