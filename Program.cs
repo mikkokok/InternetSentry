@@ -7,6 +7,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton<TechniClient>();
 builder.Services.AddSingleton<TechniService>();
+builder.Services.AddSingleton<RozalinaClient>();
 builder.Services.AddHostedService<InternetSentryWorker>();
 
 var app = builder.Build();
@@ -22,4 +23,7 @@ app.MapGet("/ping", () => "pong");
 app.MapGet("/status", (TechniService techniService) => {
     return Results.Ok(techniService.CurrenStatus);
     });
+app.MapGet("/pstatus", (TechniService techniService) => {
+    return TypedResults.Ok(techniService.Pings);
+});
 app.Run();

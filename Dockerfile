@@ -7,11 +7,7 @@ FROM mcr.microsoft.com/dotnet/aspnet:8.0-nanoserver-1809 AS base
 WORKDIR /app
 EXPOSE 8080
 
-FROM mcr.microsoft.com/dotnet/sdk:8.0-windowsservercore-ltsc2019 AS build
-# Install Visual Studio Build Tools, they are required for aot publish
-# Note: Use of the Visual Studio Build Tools requires a valid Visual Studio license.
-RUN curl -SL --output vs_buildtools.exe https://aka.ms/vs/17/release/vs_buildtools.exe
-RUN vs_buildtools.exe --installPath C:\BuildTools --add Microsoft.VisualStudio.Component.VC.Tools.x86.x64 Microsoft.VisualStudio.Component.Windows10SDK.19041 --quiet --wait --norestart --nocache
+FROM mcr.microsoft.com/dotnet/sdk:8.0-nanoserver-1809 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["InternetSentry.csproj", "."]
@@ -24,7 +20,7 @@ FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
 RUN dotnet publish "./InternetSentry.csproj" -c %BUILD_CONFIGURATION% -o /app/publish /p:UseAppHost=true
 
-FROM mcr.microsoft.com/dotnet/runtime:8.0-nanoserver-1809 AS final
+FROM base AS final
 WORKDIR /app
 EXPOSE 8080
 COPY --from=publish /app/publish .

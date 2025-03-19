@@ -4,7 +4,8 @@ namespace InternetSentry.Models
 {
     public class PingStatus
     {
-        public PingReply Status { get; set; }
+        public IPStatus Status { get; set; }
         public DateTime Updated { get; set; }
+        public long RoundTripTime { get; set; }
     }
 }
