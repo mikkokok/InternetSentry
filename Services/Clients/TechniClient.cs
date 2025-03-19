@@ -230,8 +230,7 @@ namespace InternetSentry.Services.Clients
             using var client = new HttpClient(handler) { BaseAddress = loginUrl };
             var content = new FormUrlEncodedContent(
             [
-                //new KeyValuePair<string, string>("reboot", "Router,Wifi,VoIP,Dect,MoCA"),
-                new KeyValuePair<string, string>("reboot", "Wifi"),
+                new KeyValuePair<string, string>("reboot", "Router,Wifi,VoIP,Dect,MoCA"),
                 ]);
             PatchClient(client, baseUrl, initRes.token);
             cookieContainer.Add(loginUrl, new Cookie(sessid[0], sessid[1], "/", baseUrl.Host));
