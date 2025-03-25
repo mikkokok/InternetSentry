@@ -21,7 +21,7 @@ app.UseSwaggerUI(options =>
 
 app.MapGet("/ping", () => "pong");
 app.MapGet("/status", (TechniService techniService) => {
-    return Results.Ok(techniService.CurrenStatus);
+    return Results.Ok(techniService.CurrentStatus);
     });
 app.MapGet("/pstatus", (TechniService techniService) => {
     return TypedResults.Ok(techniService.Pings);

@@ -11,13 +11,13 @@ namespace InternetSentry.Services
         private readonly TechniClient _client = techniClient;
         private readonly RozalinaClient _rozalinaClient = rozalinaClient;
         private readonly ILogger<TechniService> _logger = logger;
-        public CurrentStatus CurrenStatus { get; private set; } = new CurrentStatus { Status = ConnStatus.Connected, Updated = DateTime.Now };
+        public CurrentStatus CurrentStatus { get; private set; } = new CurrentStatus { Status = ConnStatus.Connected, Updated = DateTime.Now };
         public List<PingStatus> Pings { get; private set; } = [];
 
         public async Task RunDiag(CancellationToken stoppingToken)
         {
             _logger.LogInformation($"Started {GetType().Name}");
-            int pingCount = 9;
+            int pingCount = 29;
             try
             {
                 while (!stoppingToken.IsCancellationRequested)
@@ -27,7 +27,7 @@ namespace InternetSentry.Services
                     if (_client.PingStatus.Status == IPStatus.Success)
                     {
                         pingCount++;
-                        if (pingCount == 10)
+                        if (pingCount == 30)
                         {
                             Pings.Add(_client.PingStatus);
                             pingCount = 0;
@@ -52,10 +52,11 @@ namespace InternetSentry.Services
                         await _rozalinaClient.SendTelegramMessage("InternetSentry", false, "Cable modem rebooted");
                         sendRestart = false;
                     }
-                    if (DateTime.Now.Day == 28 && DateTime.Now.Hour == 23)
+                    if (DateTime.Now.Day % 7 == 0 && DateTime.Now.Hour == 23)
                     {
                         Pings.Clear();
                     }
+                    UpdateStatus(isConnected);
                     await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
                 }
             }
@@ -67,6 +68,16 @@ namespace InternetSentry.Services
             {
                 _logger.LogInformation($"{GetType().Name} caught exception", ex);
             }
+            UpdateStatus(false);
+        }
+        private void UpdateStatus(bool connected)
+        {
+            if (connected)
+            {
+                CurrentStatus = new CurrentStatus { Status = ConnStatus.Connected, Updated= DateTime.Now };
+                return;
+            }
+            CurrentStatus = new CurrentStatus { Status = ConnStatus.Disconnected, Updated = DateTime.Now };
         }
     }
 }
