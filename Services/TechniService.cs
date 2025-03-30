@@ -56,8 +56,8 @@ namespace InternetSentry.Services
                     {
                         Pings.Clear();
                     }
-                    UpdateStatus(isConnected);
                     await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
+                    UpdateStatus(isConnected);
                 }
             }
             catch (OperationCanceledException)
