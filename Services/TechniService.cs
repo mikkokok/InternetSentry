@@ -24,7 +24,7 @@ namespace InternetSentry.Services
                 {
                     bool sendRestart = false;
                     bool isConnected = await _client.CheckInternetStatus();
-                    if (_client.PingStatus.Status == IPStatus.Success)
+                    if (_client.PingStatus != null && _client.PingStatus.Status == IPStatus.Success)
                     {
                         pingCount++;
                         if (pingCount == 30)
