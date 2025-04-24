@@ -21,7 +21,7 @@ namespace InternetSentry.Services.Clients
         private readonly int _timeout = 12000;
         private readonly PingOptions _poptions = new(64, true);
         private readonly byte[] _buffer;
-        public PingStatus PingStatus { get; private set; }
+        public PingStatus? PingStatus { get; private set; }
         private HttpClient? _httpClient;
         private DateTime _timeNow;
 
@@ -41,7 +41,6 @@ namespace InternetSentry.Services.Clients
             bool isConnected = true;
             try
             {
-
                 string dnsName = _testDestinations.GetSection("DNS").Value ?? "";
                 if (!string.IsNullOrEmpty(dnsName))
                 {
@@ -59,7 +58,6 @@ namespace InternetSentry.Services.Clients
                     PingReply PingResult = pingSender.Send(pingDestination, _timeout, _buffer, _poptions);
                     _logger.LogInformation($"{_serviceName}:: Ping result {PingResult.Status} with roundtriptime {PingResult.RoundtripTime} {_timeNow}");
                     PingStatus = new PingStatus { Updated = DateTime.Now, Status = PingResult.Status, RoundTripTime = PingResult.RoundtripTime };
-
                 }
                 else
                 {
@@ -69,7 +67,7 @@ namespace InternetSentry.Services.Clients
                 string wgetDestination = _testDestinations.GetSection("wget").Value ?? "";
                 if (!string.IsNullOrEmpty(wgetDestination))
                 {
-                    var httpClient = GetHttpClient();
+                    var httpClient = new HttpClient();
                     var response = await httpClient.GetAsync(wgetDestination);
                     _logger.LogInformation($"{_serviceName}:: Wget statuscode {response.StatusCode} {_timeNow}");
                     response.EnsureSuccessStatusCode();
@@ -79,7 +77,6 @@ namespace InternetSentry.Services.Clients
                     _logger.LogWarning($"{_serviceName}:: Wget destination not defined in configs ");
                     isConnected = false;
                 }
-
             }
             catch (Exception ex)
             {
