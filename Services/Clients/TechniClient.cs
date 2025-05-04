@@ -39,49 +39,58 @@ namespace InternetSentry.Services.Clients
             _logger.LogInformation($"{_serviceName}:: start checking internet status");
             _timeNow = DateTime.Now;
             bool isConnected = true;
-            try
+            for (int i = 0; i < 2; i++)
             {
-                string dnsName = _testDestinations.GetSection("DNS").Value ?? "";
-                if (!string.IsNullOrEmpty(dnsName))
+                try
                 {
-                    IPHostEntry iPHost = await Dns.GetHostEntryAsync(dnsName);
+
+                    string dnsName = _testDestinations.GetSection("DNS").Value ?? "";
+                    if (!string.IsNullOrEmpty(dnsName))
+                    {
+                        IPHostEntry iPHost = await Dns.GetHostEntryAsync(dnsName);
+                    }
+                    else
+                    {
+                        _logger.LogWarning($"{_serviceName}:: DNS name not defined in configs ");
+                        isConnected = false;
+                    }
+                    string pingDestination = _testDestinations.GetSection("ping").Value ?? "";
+                    if (!string.IsNullOrEmpty(pingDestination))
+                    {
+                        Ping pingSender = new();
+                        PingReply PingResult = pingSender.Send(pingDestination, _timeout, _buffer, _poptions);
+                        _logger.LogInformation($"{_serviceName}:: Ping result {PingResult.Status} with roundtriptime {PingResult.RoundtripTime} {_timeNow}");
+                        PingStatus = new PingStatus { Updated = DateTime.Now, Status = PingResult.Status, RoundTripTime = PingResult.RoundtripTime };
+                    }
+                    else
+                    {
+                        _logger.LogWarning($"{_serviceName}:: Ping destination IP not defined in configs ");
+                        isConnected = false;
+                    }
+                    string wgetDestination = _testDestinations.GetSection("wget").Value ?? "";
+                    if (!string.IsNullOrEmpty(wgetDestination))
+                    {
+                        var httpClient = new HttpClient();
+                        var response = await httpClient.GetAsync(wgetDestination);
+                        _logger.LogInformation($"{_serviceName}:: Wget statuscode {response.StatusCode} {_timeNow}");
+                        response.EnsureSuccessStatusCode();
+                    }
+                    else
+                    {
+                        _logger.LogWarning($"{_serviceName}:: Wget destination not defined in configs ");
+                        isConnected = false;
+                    }
+                    if (isConnected)
+                    {
+                        return isConnected;
+                    }
+
                 }
-                else
+                catch (Exception ex)
                 {
-                    _logger.LogWarning($"{_serviceName}:: DNS name not defined in configs ");
+                    _logger.LogWarning($"{_serviceName}:: Connection check failed {_timeNow}", ex);
                     isConnected = false;
                 }
-                string pingDestination = _testDestinations.GetSection("ping").Value ?? "";
-                if (!string.IsNullOrEmpty(pingDestination))
-                {
-                    Ping pingSender = new();
-                    PingReply PingResult = pingSender.Send(pingDestination, _timeout, _buffer, _poptions);
-                    _logger.LogInformation($"{_serviceName}:: Ping result {PingResult.Status} with roundtriptime {PingResult.RoundtripTime} {_timeNow}");
-                    PingStatus = new PingStatus { Updated = DateTime.Now, Status = PingResult.Status, RoundTripTime = PingResult.RoundtripTime };
-                }
-                else
-                {
-                    _logger.LogWarning($"{_serviceName}:: Ping destination IP not defined in configs ");
-                    isConnected = false;
-                }
-                string wgetDestination = _testDestinations.GetSection("wget").Value ?? "";
-                if (!string.IsNullOrEmpty(wgetDestination))
-                {
-                    var httpClient = new HttpClient();
-                    var response = await httpClient.GetAsync(wgetDestination);
-                    _logger.LogInformation($"{_serviceName}:: Wget statuscode {response.StatusCode} {_timeNow}");
-                    response.EnsureSuccessStatusCode();
-                }
-                else
-                {
-                    _logger.LogWarning($"{_serviceName}:: Wget destination not defined in configs ");
-                    isConnected = false;
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning($"{_serviceName}:: Connection check failed {_timeNow}", ex);
-                isConnected = false;
             }
             _logger.LogInformation($"{_serviceName}:: Checking internet status resulted in {isConnected} {_timeNow}");
             return isConnected;
