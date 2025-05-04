@@ -20,9 +20,9 @@ namespace InternetSentry.Services
             int pingCount = 29;
             try
             {
+                bool sendRestart = false;
                 while (!stoppingToken.IsCancellationRequested)
                 {
-                    bool sendRestart = false;
                     bool isConnected = await _client.CheckInternetStatus();
                     if (_client.PingStatus != null && _client.PingStatus.Status == IPStatus.Success)
                     {
@@ -66,7 +66,7 @@ namespace InternetSentry.Services
             }
             catch (Exception ex)
             {
-                _logger.LogInformation($"{GetType().Name} caught exception", ex);
+                _logger.LogInformation($"{GetType().Name} caught exception", ex.Message);
             }
             UpdateStatus(false);
         }
