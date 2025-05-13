@@ -62,11 +62,11 @@ namespace InternetSentry.Services
             }
             catch (OperationCanceledException)
             {
-                _logger.LogInformation($"{GetType().Name} is stopping");
+                _logger.LogError($"{GetType().Name} is stopping");
             }
             catch (Exception ex)
             {
-                _logger.LogInformation($"{GetType().Name} caught exception", ex.Message);
+                _logger.LogCritical(ex, $"{GetType().Name} caught exception");
             }
             UpdateStatus(false);
         }
