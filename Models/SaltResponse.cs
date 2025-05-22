@@ -1,5 +1,6 @@
 ﻿namespace InternetSentry.Models
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "<Pending>")]
     public sealed class SaltResponse
     {
         public required string error { get; set; }

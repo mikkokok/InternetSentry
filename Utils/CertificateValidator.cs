@@ -5,7 +5,7 @@ namespace InternetSentry.Utils
 {
     public class CertificateValidator
     {
-        private IConfiguration _config;
+        private readonly IConfiguration _config;
         private readonly string _trustedThumbprint;
 
         public CertificateValidator(IConfiguration config)

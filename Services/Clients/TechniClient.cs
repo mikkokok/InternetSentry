@@ -43,7 +43,6 @@ namespace InternetSentry.Services.Clients
             {
                 try
                 {
-
                     string dnsName = _testDestinations.GetSection("DNS").Value ?? "";
                     if (!string.IsNullOrEmpty(dnsName))
                     {
@@ -84,7 +83,6 @@ namespace InternetSentry.Services.Clients
                     {
                         return isConnected;
                     }
-
                 }
                 catch (Exception ex)
                 {
@@ -98,6 +96,7 @@ namespace InternetSentry.Services.Clients
 
         public async Task ForceRestart()
         {
+            _httpClient = null;
             string cookie = await GetCookie();
             _logger.LogInformation($"{_serviceName}:: Cookie {cookie} {_timeNow}");
             SaltResponse saltContent = await GetLoginSalt(cookie);
